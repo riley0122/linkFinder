@@ -165,32 +165,7 @@
 
           const ctx = canvas.getContext("2d");
 
-          const circles = [
-            new Circle(
-              canvas.width / 2,
-              canvas.height / 2,
-              30,
-              ctx,
-              0,
-              "https://google.com"
-            ),
-            new Circle(
-              canvas.width / 2.2,
-              canvas.height / 1.2,
-              30,
-              ctx,
-              1,
-              "https://apple.com"
-            ),
-            new Circle(
-              canvas.width / 3,
-              canvas.height / 3,
-              30,
-              ctx,
-              2,
-              "https://lucasammer.com"
-            ),
-          ];
+          const circles = [];
 
           circles[2].addLink("https://google.com", circles);
           circles[1].addLinkById(0);
