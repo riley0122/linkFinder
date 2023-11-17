@@ -51,6 +51,7 @@
     <div id="app" class="hidden"></div>
 
     <script type="module">
+      let randomness = 150;
       import { createApp, ref } from "vue";
 
       class Circle {
@@ -73,7 +74,16 @@
             }
           }
           this.links.push(circles.length);
-          circles.push(new Circle(0, 0, 1, this.ctx, circles.length, link));
+          circles.push(
+            new Circle(
+              this.x + Math.random() * randomness - randomness / 2,
+              this.y + Math.random() * randomness - randomness / 2,
+              1,
+              this.ctx,
+              circles.length,
+              link
+            )
+          );
         }
 
         addLinkById(id) {
@@ -114,6 +124,8 @@
           canvas.height = window.innerHeight;
           document.getElementById("app").appendChild(canvas);
 
+          randomness = (window.innerWidth / 3 + window.innerHeight / 3) / 2;
+
           const ctx = canvas.getContext("2d");
 
           const circles = [
@@ -123,7 +135,7 @@
               30,
               ctx,
               0,
-              "google.com"
+              "https://google.com"
             ),
             new Circle(
               canvas.width / 2.2,
@@ -131,7 +143,7 @@
               30,
               ctx,
               1,
-              "apple.com"
+              "https://apple.com"
             ),
             new Circle(
               canvas.width / 3,
@@ -139,11 +151,11 @@
               30,
               ctx,
               2,
-              "lucasammer.com"
+              "https://lucasammer.com"
             ),
           ];
 
-          circles[2].addLink("google.com", circles);
+          circles[2].addLink("https://google.com", circles);
           circles[1].addLinkById(0);
 
           let CurrentLink = "None";
@@ -268,8 +280,27 @@
                   redrawCanvas();
                 }
               } else if (e.target.id === "scan") {
-                // Implement scan functionality as needed
-                alert(`Scanning link: ${circle.link}`);
+                const evtSource = new EventSource(
+                  `http://localhost:3000/scan/${encodeURIComponent(
+                    circle.link
+                  )}`
+                );
+                circle.changeColour("yellow");
+                redrawCanvas();
+                evtSource.onmessage = (event) => {
+                  console.log(JSON.parse(event.data));
+                  if (JSON.parse(event.data).name == "finished") {
+                    circle.changeColour("orange");
+                    redrawCanvas();
+                    evtSource.close();
+                  } else if (JSON.parse(event.data).name == "error") {
+                    circle.changeColour("red");
+                    redrawCanvas();
+                    evtSource.close();
+                  } else if (JSON.parse(event.data).name == "url") {
+                    circle.addLink(JSON.parse(event.data).data, circles);
+                  }
+                };
               }
 
               isContexting = false;
