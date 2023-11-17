@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Link Finder</title>
+  </head>
+  <body>
+    <script type="importmap">
+      {
+        "imports": {
+          "vue": "https://unpkg.com/vue@3/dist/vue.esm-browser.js"
+        }
+      }
+    </script>
+
+    <style>
+      body {
+        background-color: black;
+        color: green;
+      }
+
+      .hidden {
+        display: none;
+      }
+    </style>
+    <noscript>
+      Sorry but this web page will not work without JavaScript.
+    </noscript>
+
+    <div id="app" class="hidden"></div>
+
+    <script type="module">
+      import { createApp, ref } from "vue";
+
+      class Circle {
+        constructor(x, y, radius, ctx) {
+          this.x = x;
+          this.y = y;
+          this.radius = radius;
+          this.ctx = ctx;
+          this.colour = "green";
+        }
+
+        changeColour(colour) {
+          this.colour = colour;
+        }
+
+        draw() {
+          this.ctx.beginPath();
+          this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
+          this.ctx.fillStyle = this.colour;
+          this.ctx.fill();
+          this.ctx.closePath();
+        }
+      }
+
+      document.getElementById("app").classList.remove("hidden");
+
+      createApp({
+        setup() {
+          const canvas = document.createElement("canvas");
+          canvas.width = 400;
+          canvas.height = 400;
+          document.getElementById("app").appendChild(canvas);
+
+          const ctx = canvas.getContext("2d");
+
+          const circles = [
+            new Circle(100, 100, 30, ctx),
+            new Circle(200, 200, 50, ctx),
+            // Add more circles as needed
+          ];
+
+          // Event listeners for dragging
+          let isDragging = false;
+          let selectedCircle = null;
+
+          canvas.addEventListener("mousedown", (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            // Check if the mouse is inside any circle
+            for (const circle of circles) {
+              const distance = Math.sqrt(
+                (mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2
+              );
+              if (distance <= circle.radius) {
+                isDragging = true;
+                selectedCircle = circle;
+                break;
+              }
+            }
+          });
+
+          canvas.addEventListener("mousemove", (e) => {
+            if (isDragging && selectedCircle) {
+              const rect = canvas.getBoundingClientRect();
+              selectedCircle.x = e.clientX - rect.left;
+              selectedCircle.y = e.clientY - rect.top;
+              redrawCanvas();
+            }
+          });
+
+          canvas.addEventListener("mouseup", () => {
+            isDragging = false;
+            selectedCircle = null;
+          });
+
+          // Function to redraw the canvas with all circles
+          const redrawCanvas = () => {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+            for (const circle of circles) {
+              circle.draw();
+            }
+          };
+
+          // Initial draw
+          redrawCanvas();
+        },
+      }).mount("#app");
+    </script>
+  </body>
+</html>
