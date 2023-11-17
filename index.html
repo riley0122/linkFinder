@@ -113,6 +113,43 @@
           this.ctx.fill();
           this.ctx.closePath();
         }
+
+        updatePosition(circles) {
+          const force = { x: 0, y: 0 };
+
+          for (const c of circles) {
+            if (c.id !== this.id) {
+              const dx = c.x - this.x;
+              const dy = c.y - this.y;
+              const distance = Math.sqrt(dx * dx + dy * dy);
+
+              // Adjust force based on link strength
+              if (this.links.includes(c.id)) {
+                force.x += dx * 0.01;
+                force.y += dy * 0.01;
+              }
+
+              // Adjust force based on repulsion
+              const repulsion = 100 / (distance * distance);
+              force.x -= repulsion * (dx / distance);
+              force.y -= repulsion * (dy / distance);
+            }
+          }
+
+          // Update circle position based on force
+          this.x += force.x;
+          this.y += force.y;
+
+          // Limit circle position within the canvas bounds
+          this.x = Math.max(
+            this.radius,
+            Math.min(window.innerWidth - this.radius, this.x)
+          );
+          this.y = Math.max(
+            this.radius,
+            Math.min(window.innerHeight - this.radius, this.y)
+          );
+        }
       }
 
       document.getElementById("app").classList.remove("hidden");
@@ -202,17 +239,26 @@
 
           canvas.addEventListener("mousemove", (e) => {
             if (isDragging && selectedCircle) {
+              // User is dragging, set the circle position directly
               const rect = canvas.getBoundingClientRect();
               selectedCircle.x = e.clientX - rect.left;
               selectedCircle.y = e.clientY - rect.top;
-              redrawCanvas();
+            } else {
+              // User is not dragging, update positions based on forces
+              for (const circle of circles) {
+                circle.updatePosition(circles);
+              }
             }
+
+            redrawCanvas();
           });
 
           canvas.addEventListener("mouseup", () => {
             isDragging = false;
             selectedCircle = null;
           });
+
+          let currentCircleContext = null;
 
           // Event listener for creating a new circle on right-click
           canvas.addEventListener("contextmenu", (e) => {
@@ -236,6 +282,7 @@
                 clickedExistingCircle = true;
                 CurrentLink = circle.link;
                 RenderContextMenu();
+                currentCircleContext = circle.id;
                 displayContextMenu(e.clientX, e.clientY, circle);
                 break;
               }
@@ -258,7 +305,14 @@
 
           // Function to redraw the canvas with all circles
           const redrawCanvas = () => {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Update positions based on forces
+            for (const circle of circles) {
+              circle.updatePosition(circles);
+            }
+
+            // Draw circles based on updated positions
             for (const circle of circles) {
               circle.draw(circles);
             }
@@ -272,6 +326,9 @@
 
             // Event listener for context menu items
             contextMenu.addEventListener("click", (e) => {
+              if (currentCircleContext !== circle.id) {
+                return;
+              }
               if (e.target.id === "delete") {
                 // Delete the selected circle
                 const index = circles.indexOf(circle);
