@@ -84,8 +84,19 @@
           this.colour = colour;
         }
 
-        draw() {
-          this.radius = Math.min(this.links.length + 5, 35);
+        draw(circles) {
+          let counter = 0;
+          for (const c in circles) {
+            if (circles[c].links.includes(this.id)) {
+              counter++;
+              this.ctx.beginPath();
+              this.ctx.moveTo(this.x, this.y);
+              this.ctx.lineTo(circles[c].x, circles[c].y);
+              this.ctx.strokeStyle = "white";
+              this.ctx.stroke();
+            }
+          }
+          this.radius = Math.min(counter * 3 + 5, 35);
           this.ctx.beginPath();
           this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
           this.ctx.fillStyle = this.colour;
@@ -106,10 +117,34 @@
           const ctx = canvas.getContext("2d");
 
           const circles = [
-            new Circle(100, 100, 30, ctx, 0, "Link 1"),
-            new Circle(200, 200, 50, ctx, 1, "Link 2"),
-            // Add more circles as needed
+            new Circle(
+              canvas.width / 2,
+              canvas.height / 2,
+              30,
+              ctx,
+              0,
+              "google.com"
+            ),
+            new Circle(
+              canvas.width / 2.2,
+              canvas.height / 1.2,
+              30,
+              ctx,
+              1,
+              "apple.com"
+            ),
+            new Circle(
+              canvas.width / 3,
+              canvas.height / 3,
+              30,
+              ctx,
+              2,
+              "lucasammer.com"
+            ),
           ];
+
+          circles[2].addLink("google.com", circles);
+          circles[1].addLinkById(0);
 
           let CurrentLink = "None";
 
@@ -213,7 +248,7 @@
           const redrawCanvas = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
             for (const circle of circles) {
-              circle.draw();
+              circle.draw(circles);
             }
           };
 
