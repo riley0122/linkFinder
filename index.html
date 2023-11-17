@@ -293,6 +293,9 @@
                     circle.changeColour("orange");
                     redrawCanvas();
                     evtSource.close();
+
+                    circle.changeColour("blue");
+                    redrawCanvas();
                   } else if (JSON.parse(event.data).name == "error") {
                     circle.changeColour("red");
                     redrawCanvas();
