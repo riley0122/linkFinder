@@ -38,6 +38,11 @@
         cursor: pointer;
         margin: 5px 0;
       }
+
+      body {
+        margin: 0;
+        overflow: hidden;
+      }
     </style>
     <noscript>
       Sorry but this web page will not work without JavaScript.
@@ -80,6 +85,7 @@
         }
 
         draw() {
+          this.radius = Math.min(this.links.length + 5, 35);
           this.ctx.beginPath();
           this.ctx.arc(this.x, this.y, this.radius, 0, 2 * Math.PI);
           this.ctx.fillStyle = this.colour;
@@ -93,8 +99,8 @@
       createApp({
         setup() {
           const canvas = document.createElement("canvas");
-          canvas.width = 400;
-          canvas.height = 400;
+          canvas.width = window.innerWidth;
+          canvas.height = window.innerHeight;
           document.getElementById("app").appendChild(canvas);
 
           const ctx = canvas.getContext("2d");
@@ -123,6 +129,7 @@
           // Event listeners for dragging
           let isDragging = false;
           let selectedCircle = null;
+          let isContexting = false;
 
           canvas.addEventListener("mousedown", (e) => {
             const rect = canvas.getBoundingClientRect();
@@ -138,6 +145,10 @@
                 isDragging = true;
                 selectedCircle = circle;
                 break;
+              } else {
+                if (isContexting) {
+                  contextMenu.display = "None";
+                }
               }
             }
           });
@@ -159,7 +170,8 @@
           // Event listener for creating a new circle on right-click
           canvas.addEventListener("contextmenu", (e) => {
             isDragging = false;
-            selectedCircle = null;
+            isContexting = true;
+
             e.preventDefault(); // Prevent the default context menu
 
             const rect = canvas.getBoundingClientRect();
@@ -183,16 +195,13 @@
             }
 
             if (!clickedExistingCircle) {
+              let name = prompt("Enter the link for the new node:");
+              if (name == null || name.trim() == "") {
+                return;
+              }
               // Create a new circle at the right-click position
               circles.push(
-                new Circle(
-                  mouseX,
-                  mouseY,
-                  30,
-                  ctx,
-                  circles.length,
-                  prompt("Enter the link for the new node:")
-                )
+                new Circle(mouseX, mouseY, 30, ctx, circles.length, name)
               );
 
               // Redraw the canvas with the new circle
@@ -228,6 +237,7 @@
                 alert(`Scanning link: ${circle.link}`);
               }
 
+              isContexting = false;
               // Hide the context menu
               contextMenu.style.display = "none";
             });
