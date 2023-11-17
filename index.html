@@ -23,6 +23,21 @@
       .hidden {
         display: none;
       }
+
+      .context-menu {
+        position: absolute;
+        background-color: white;
+        border: 1px solid black;
+        padding: 5px;
+        list-style-type: none;
+        margin: 0;
+        display: none;
+      }
+
+      .context-menu li {
+        cursor: pointer;
+        margin: 5px 0;
+      }
     </style>
     <noscript>
       Sorry but this web page will not work without JavaScript.
@@ -34,12 +49,30 @@
       import { createApp, ref } from "vue";
 
       class Circle {
-        constructor(x, y, radius, ctx) {
+        constructor(x, y, radius, ctx, id, link) {
           this.x = x;
           this.y = y;
           this.radius = radius;
           this.ctx = ctx;
           this.colour = "green";
+          this.id = id;
+          this.links = [];
+          this.link = link;
+        }
+
+        addLink(link, circles) {
+          for (const circle of circles) {
+            if (circle.link == link) {
+              this.addLinkById(circle.id);
+              return;
+            }
+          }
+          this.links.push(circles.length);
+          circles.push(new Circle(0, 0, 1, this.ctx, circles.length, link));
+        }
+
+        addLinkById(id) {
+          this.links.push(id);
         }
 
         changeColour(colour) {
@@ -67,10 +100,25 @@
           const ctx = canvas.getContext("2d");
 
           const circles = [
-            new Circle(100, 100, 30, ctx),
-            new Circle(200, 200, 50, ctx),
+            new Circle(100, 100, 30, ctx, 0, "Link 1"),
+            new Circle(200, 200, 50, ctx, 1, "Link 2"),
             // Add more circles as needed
           ];
+
+          let CurrentLink = "None";
+
+          // Context menu
+          const contextMenu = document.createElement("ul");
+          contextMenu.classList.add("context-menu");
+          const RenderContextMenu = () => {
+            contextMenu.innerHTML = `
+            <li id="link"><b>${CurrentLink}</b></li>
+            <li id="delete">Delete</li>
+            <li id="scan">Scan</li>
+          `;
+          };
+          RenderContextMenu();
+          document.body.appendChild(contextMenu);
 
           // Event listeners for dragging
           let isDragging = false;
@@ -108,12 +156,81 @@
             selectedCircle = null;
           });
 
+          // Event listener for creating a new circle on right-click
+          canvas.addEventListener("contextmenu", (e) => {
+            isDragging = false;
+            selectedCircle = null;
+            e.preventDefault(); // Prevent the default context menu
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            let clickedExistingCircle = false;
+
+            // Check if the mouse is inside any circle
+            for (const circle of circles) {
+              const distance = Math.sqrt(
+                (mouseX - circle.x) ** 2 + (mouseY - circle.y) ** 2
+              );
+              if (distance <= circle.radius) {
+                clickedExistingCircle = true;
+                CurrentLink = circle.link;
+                RenderContextMenu();
+                displayContextMenu(e.clientX, e.clientY, circle);
+                break;
+              }
+            }
+
+            if (!clickedExistingCircle) {
+              // Create a new circle at the right-click position
+              circles.push(
+                new Circle(
+                  mouseX,
+                  mouseY,
+                  30,
+                  ctx,
+                  circles.length,
+                  prompt("Enter the link for the new node:")
+                )
+              );
+
+              // Redraw the canvas with the new circle
+              redrawCanvas();
+            }
+          });
+
           // Function to redraw the canvas with all circles
           const redrawCanvas = () => {
             ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear the canvas
             for (const circle of circles) {
               circle.draw();
             }
+          };
+
+          // Function to display context menu
+          const displayContextMenu = (x, y, circle) => {
+            contextMenu.style.left = `${x}px`;
+            contextMenu.style.top = `${y}px`;
+            contextMenu.style.display = "block";
+
+            // Event listener for context menu items
+            contextMenu.addEventListener("click", (e) => {
+              if (e.target.id === "delete") {
+                // Delete the selected circle
+                const index = circles.indexOf(circle);
+                if (index !== -1) {
+                  circles.splice(index, 1);
+                  redrawCanvas();
+                }
+              } else if (e.target.id === "scan") {
+                // Implement scan functionality as needed
+                alert(`Scanning link: ${circle.link}`);
+              }
+
+              // Hide the context menu
+              contextMenu.style.display = "none";
+            });
           };
 
           // Initial draw
