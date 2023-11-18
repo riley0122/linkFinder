@@ -389,6 +389,12 @@
             }
           };
 
+          window.addEventListener("resize", (event) => {
+            // Update canvas size
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+          });
+
           // Function to display context menu
           const displayContextMenu = (x, y, circle) => {
             contextMenu.style.left = `${x}px`;
