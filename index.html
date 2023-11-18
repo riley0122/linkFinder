@@ -122,7 +122,7 @@
           }
           const force = { x: 0, y: 0 };
           const minDistance = 75; // Set your desired minimum distance
-          const centerAttractionFactor = 0.005; // Adjust the strength of the attraction to the center
+          let centerAttractionFactor = 0.005; // Adjust the strength of the attraction to the center
 
           for (const c of circles) {
             if (c.id !== this.id) {
@@ -150,6 +150,9 @@
               }
               force.x -= repulsion * (dx / distance);
               force.y -= repulsion * (dy / distance);
+            }
+            if (c.links.includes(this.id)) {
+              centerAttractionFactor = 0;
             }
           }
 
