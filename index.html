@@ -191,7 +191,8 @@
           // Attract to the center of the canvas
           const centerForceX =
             (window.innerWidth / 2 - this.x) * centerAttractionFactor;
-          (window.innerHeight / 2 - this.y) * centerAttractionFactor;
+          const centerForceY =
+            (window.innerHeight / 2 - this.y) * centerAttractionFactor;
 
           force.x += centerForceX;
           force.y += centerForceY;
