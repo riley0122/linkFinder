@@ -64,6 +64,7 @@
           this.id = id;
           this.links = [];
           this.link = link;
+          this.wasScanned = false;
         }
 
         addLink(link, circles) {
@@ -115,8 +116,12 @@
         }
 
         updatePosition(circles) {
+          // If was already scanned dont move it unless user drags it
+          if (this.wasScanned) {
+            return;
+          }
           const force = { x: 0, y: 0 };
-          const minDistance = 50; // Set your desired minimum distance
+          const minDistance = 75; // Set your desired minimum distance
           const centerAttractionFactor = 0.005; // Adjust the strength of the attraction to the center
 
           for (const c of circles) {
@@ -139,8 +144,10 @@
                 force.y += dy * attractionFactor;
               }
               // Introduce repulsion force if circles are too close
-              const repulsion =
-                Math.max(0, minDistance - distance) / minDistance;
+              let repulsion = Math.max(0, minDistance - distance) / minDistance;
+              if (!c.links.includes(this.id)) {
+                repulsion + this.links / 10;
+              }
               force.x -= repulsion * (dx / distance);
               force.y -= repulsion * (dy / distance);
             }
@@ -346,6 +353,7 @@
                     evtSource.close();
 
                     circle.changeColour("blue");
+                    circle.wasScanned = true;
                     redrawCanvas();
                   } else if (JSON.parse(event.data).name == "error") {
                     circle.changeColour("red");
