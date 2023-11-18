@@ -230,7 +230,7 @@
           infopanel.classList.add("infopanel");
           const RenderInfoPanel = () => {
             infopanel.innerHTML = `
-            <kbd><kbd>RMB</kbd> create new node<br><kbd>A</kbd> create new node <br> <kbd>RMB</kbd> (on circle) Open context menu <br> <kbd>LMB</kbd> (on circle) Drag circle<br> <kbd>D</kbd> Delete nodes with 0 connections<br><kbd>D</kbd> + <kbd>A</kbd> Delete all nodes<br> <kbd>H</kbd> Hide this panel</kbd>
+            <kbd><kbd>RMB</kbd> create new node<br> <kbd>RMB</kbd> (on circle) Open context menu <br> <kbd>LMB</kbd> (on circle) Drag circle<br> <kbd>D</kbd> Delete nodes with 0 connections<br><kbd>D</kbd> + <kbd>A</kbd> Delete all nodes<br> <kbd>H</kbd> Hide this panel</kbd>
           `;
           };
           RenderInfoPanel();
@@ -454,18 +454,6 @@
             } else if (keys.includes("KeyH")) {
               console.log("Hiding info panel");
               infopanel.style.display = "none";
-            } else if (keys.includes("KeyA")) {
-              let name = prompt("Enter the link for the new node:");
-              if (name == null || name.trim() == "") {
-                return;
-              }
-              // Create a new circle at the right-click position
-              circles.push(
-                new Circle(mouseX, mouseY, 30, ctx, circles.length, name)
-              );
-
-              // Redraw the canvas with the new circle
-              redrawCanvas();
             }
           };
 
