@@ -247,7 +247,7 @@
           infopanel.classList.add("infopanel");
           const RenderInfoPanel = () => {
             infopanel.innerHTML = `
-            <kbd><kbd>RMB</kbd> create new node<br> <kbd>RMB</kbd> (on circle) Open context menu <br> <kbd>LMB</kbd> (on circle) Drag circle<br> <kbd>D</kbd> Delete nodes with 0 connections<br><kbd>D</kbd> + <kbd>A</kbd> Delete all nodes<br> <kbd>H</kbd> Hide this panel</kbd>
+            <kbd><kbd>RMB</kbd> create new node<br> <kbd>RMB</kbd> (on circle) Open context menu <br> <kbd>LMB</kbd> (on circle) Drag circle<br> <kbd>D</kbd> Delete nodes with 0 connections<br><kbd>D</kbd> + <kbd>A</kbd> Delete all nodes<br> <kbd>F</kbd> Toggle fullscreen<br> <kbd>H</kbd> Hide this panel</kbd>
           `;
           };
           RenderInfoPanel();
@@ -477,6 +477,13 @@
             } else if (keys.includes("KeyH")) {
               console.log("Hiding info panel");
               infopanel.style.display = "none";
+            } else if (keys.includes("KeyF")) {
+              console.log("Trying to toggle fullscreen");
+              if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen();
+              } else if (document.exitFullscreen) {
+                document.exitFullscreen();
+              }
             }
           };
 
