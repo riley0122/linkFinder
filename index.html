@@ -43,6 +43,21 @@
         margin: 0;
         overflow: hidden;
       }
+
+      kbd {
+        background-color: #eee;
+        border-radius: 3px;
+        border: 1px solid #b4b4b4;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2),
+          0 2px 0 0 rgba(255, 255, 255, 0.7) inset;
+        color: #333;
+        display: inline-block;
+        font-size: 0.85em;
+        font-weight: 700;
+        line-height: 1;
+        padding: 2px 4px;
+        white-space: nowrap;
+      }
     </style>
     <noscript>
       Sorry but this web page will not work without JavaScript.
@@ -209,6 +224,22 @@
           };
           RenderContextMenu();
           document.body.appendChild(contextMenu);
+
+          // Setup info panel
+          const infopanel = document.createElement("ul");
+          infopanel.classList.add("infopanel");
+          const RenderInfoPanel = () => {
+            infopanel.innerHTML = `
+            <kbd><kbd>RMB</kbd> create new node <br> <kbd>RMB</kbd> (on circle) Open context menu <br> <kbd>LMB</kbd> (on circle) Drag circle<br> <kbd>D</kbd> Delete nodes with 0 connections<br><kbd>D</kbd>+<kbd>A</kbd> Delete all nodes<br> <kbd>H</kbd> Hide this panel</kbd>
+          `;
+          };
+          RenderInfoPanel();
+          document.body.appendChild(infopanel);
+          infopanel.style.right = `15px`;
+          infopanel.style.bottom = `0px`;
+          infopanel.style.textAlign = "left";
+          infopanel.style.display = "block";
+          infopanel.style.position = "absolute";
 
           // Event listeners for dragging
           let isDragging = false;
