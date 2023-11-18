@@ -131,10 +131,11 @@
         }
 
         updatePosition(circles) {
-          // If was already scanned dont move it unless user drags it
+          // If was already scanned, don't move it unless the user drags it
           if (this.wasScanned) {
             return;
           }
+
           const force = { x: 0, y: 0 };
           const minDistance = 75; // Set your desired minimum distance
           let centerAttractionFactor = 0.005; // Adjust the strength of the attraction to the center
@@ -165,6 +166,15 @@
               }
               force.x -= repulsion * (dx / distance);
               force.y -= repulsion * (dy / distance);
+
+              // Check for collision and adjust positions
+              const overlap = this.radius + c.radius - distance;
+              if (overlap > 0) {
+                const adjustX = (overlap / distance) * dx * 0.5;
+                const adjustY = (overlap / distance) * dy * 0.5;
+                this.x -= adjustX;
+                this.y -= adjustY;
+              }
             }
             if (c.links.includes(this.id)) {
               centerAttractionFactor = 0;
