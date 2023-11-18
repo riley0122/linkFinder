@@ -48,10 +48,14 @@ app.get("/scan/:link", (req, res) => {
         i++
       ) {
         const element = result.data.match(/(?:href="http).*?(?:")/g)[i];
+        let url = element.split('href="')[1].split('"')[0];
+        if (url.endsWith("/")) {
+          url.slice(0, -1);
+        }
         res.write(
           `data: ${JSON.stringify({
             name: "url",
-            data: element.split('href="')[1].split('"')[0],
+            data: url,
           })}\n\n`
         );
       }
