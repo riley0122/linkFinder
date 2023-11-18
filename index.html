@@ -116,6 +116,8 @@
 
         updatePosition(circles) {
           const force = { x: 0, y: 0 };
+          const minDistance = 50; // Set your desired minimum distance
+          const centerAttractionFactor = 0.005; // Adjust the strength of the attraction to the center
 
           for (const c of circles) {
             if (c.id !== this.id) {
@@ -123,18 +125,35 @@
               const dy = c.y - this.y;
               const distance = Math.sqrt(dx * dx + dy * dy);
 
-              // Adjust force based on link strength
-              if (this.links.includes(c.id)) {
-                force.x += dx * 0.01;
-                force.y += dy * 0.01;
-              }
+              // Check if the current circle is linked TO the other circle
+              if (c.links.includes(this.id)) {
+                let attractionFactor = 0.01;
 
-              // Adjust force based on repulsion
-              const repulsion = 100 / (distance * distance);
+                // Adjust force based on the number of links TO the current circle
+                attractionFactor *= c.links.filter(
+                  (linkId) => linkId === this.id
+                ).length;
+
+                // Adjust force based on link strength
+                force.x += dx * attractionFactor;
+                force.y += dy * attractionFactor;
+              }
+              // Introduce repulsion force if circles are too close
+              const repulsion =
+                Math.max(0, minDistance - distance) / minDistance;
               force.x -= repulsion * (dx / distance);
               force.y -= repulsion * (dy / distance);
             }
           }
+
+          // Attract to the center of the canvas
+          const centerForceX =
+            (window.innerWidth / 2 - this.x) * centerAttractionFactor;
+          const centerForceY =
+            (window.innerHeight / 2 - this.y) * centerAttractionFactor;
+
+          force.x += centerForceX;
+          force.y += centerForceY;
 
           // Update circle position based on force
           this.x += force.x;
@@ -214,15 +233,19 @@
               const rect = canvas.getBoundingClientRect();
               selectedCircle.x = e.clientX - rect.left;
               selectedCircle.y = e.clientY - rect.top;
-            } else {
-              // User is not dragging, update positions based on forces
-              for (const circle of circles) {
-                circle.updatePosition(circles);
-              }
             }
 
             redrawCanvas();
           });
+
+          setInterval(() => {
+            if (!isDragging && !selectedCircle) {
+              for (const circle of circles) {
+                circle.updatePosition(circles);
+              }
+              redrawCanvas();
+            }
+          }, 5);
 
           canvas.addEventListener("mouseup", () => {
             isDragging = false;
