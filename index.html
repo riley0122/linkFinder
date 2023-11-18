@@ -66,6 +66,12 @@
     <div id="app" class="hidden"></div>
 
     <script type="module">
+      function getRandomNumbers() {
+        const typedArray = new Uint8Array(10);
+        const randomValues = window.crypto.getRandomValues(typedArray);
+        return randomValues.join("");
+      }
+
       let randomness = 150;
       import { createApp, ref } from "vue";
 
@@ -89,14 +95,15 @@
               return;
             }
           }
-          this.links.push(circles.length);
+          const id = getRandomNumbers();
+          this.links.push(id);
           circles.push(
             new Circle(
               this.x + Math.random() * randomness - randomness / 2,
               this.y + Math.random() * randomness - randomness / 2,
               1,
               this.ctx,
-              circles.length,
+              id,
               link
             )
           );
@@ -184,8 +191,7 @@
           // Attract to the center of the canvas
           const centerForceX =
             (window.innerWidth / 2 - this.x) * centerAttractionFactor;
-          const centerForceY =
-            (window.innerHeight / 2 - this.y) * centerAttractionFactor;
+          (window.innerHeight / 2 - this.y) * centerAttractionFactor;
 
           force.x += centerForceX;
           force.y += centerForceY;
@@ -359,7 +365,7 @@
               }
               // Create a new circle at the right-click position
               circles.push(
-                new Circle(mouseX, mouseY, 30, ctx, circles.length, name)
+                new Circle(mouseX, mouseY, 30, ctx, getRandomNumbers(), name)
               );
 
               // Redraw the canvas with the new circle
