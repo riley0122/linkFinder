@@ -209,7 +209,7 @@
 
           const ctx = canvas.getContext("2d");
 
-          const circles = [];
+          let circles = [];
           let CurrentLink = "None";
 
           // Context menu
@@ -230,7 +230,7 @@
           infopanel.classList.add("infopanel");
           const RenderInfoPanel = () => {
             infopanel.innerHTML = `
-            <kbd><kbd>RMB</kbd> create new node <br> <kbd>RMB</kbd> (on circle) Open context menu <br> <kbd>LMB</kbd> (on circle) Drag circle<br> <kbd>D</kbd> Delete nodes with 0 connections<br><kbd>D</kbd>+<kbd>A</kbd> Delete all nodes<br> <kbd>H</kbd> Hide this panel</kbd>
+            <kbd><kbd>RMB</kbd> create new node<br><kbd>A</kbd> create new node <br> <kbd>RMB</kbd> (on circle) Open context menu <br> <kbd>LMB</kbd> (on circle) Drag circle<br> <kbd>D</kbd> Delete nodes with 0 connections<br><kbd>D</kbd> + <kbd>A</kbd> Delete all nodes<br> <kbd>H</kbd> Hide this panel</kbd>
           `;
           };
           RenderInfoPanel();
@@ -240,6 +240,25 @@
           infopanel.style.textAlign = "left";
           infopanel.style.display = "block";
           infopanel.style.position = "absolute";
+
+          const downKeys = document.createElement("ul");
+          infopanel.classList.add("downKeys");
+          const RenderDownPanel = (keys) => {
+            if (keys.length == 0) {
+              downKeys.style.display = "none";
+            } else {
+              downKeys.style.display = "block";
+              downKeys.innerHTML = `
+            <kbd><kbd>${keys.join("</kbd> + <kbd>")}</kbd></kbd>`;
+            }
+          };
+          RenderDownPanel([]);
+          document.body.appendChild(downKeys);
+          downKeys.style.left = `0px`;
+          downKeys.style.bottom = `0px`;
+          downKeys.style.textAlign = "left";
+          downKeys.style.display = "block";
+          downKeys.style.position = "absolute";
 
           // Event listeners for dragging
           let isDragging = false;
@@ -410,6 +429,71 @@
               contextMenu.style.display = "none";
             });
           };
+
+          const runKeybind = (keys) => {
+            if (keys.includes("KeyD")) {
+              console.log("deleting");
+              if (keys.includes("KeyA")) {
+                console.log("all");
+                circles = [];
+                redrawCanvas();
+              } else {
+                for (let i = circles.length - 1; i > -1; i--) {
+                  const circle = circles[i];
+                  let del = true;
+                  for (const c in circles) {
+                    if (circles[c].links.includes(circle.id)) {
+                      del = false;
+                    }
+                  }
+                  if (circle.links.length == 0 && del) {
+                    circles.splice(i, 1);
+                  }
+                }
+              }
+            } else if (keys.includes("KeyH")) {
+              console.log("Hiding info panel");
+              infopanel.style.display = "none";
+            } else if (keys.includes("KeyA")) {
+              let name = prompt("Enter the link for the new node:");
+              if (name == null || name.trim() == "") {
+                return;
+              }
+              // Create a new circle at the right-click position
+              circles.push(
+                new Circle(mouseX, mouseY, 30, ctx, circles.length, name)
+              );
+
+              // Redraw the canvas with the new circle
+              redrawCanvas();
+            }
+          };
+
+          let keys = [];
+          document.addEventListener("keydown", (event) => {
+            if (
+              event.isComposing ||
+              event.keyCode === 229 ||
+              keys.includes(event.code)
+            ) {
+              return;
+            }
+            console.log(`adding ${event.code}`);
+
+            keys.push(event.code);
+            RenderDownPanel(keys);
+          });
+
+          document.addEventListener("keyup", (event) => {
+            if (event.isComposing || event.keyCode === 229) {
+              return;
+            }
+            console.log(`running action for ${keys}`);
+            runKeybind(keys);
+            console.log(`removing ${event.code}`);
+            keys.splice(keys.indexOf(event.code), 1);
+            RenderDownPanel(keys);
+          });
 
           // Initial draw
           redrawCanvas();
