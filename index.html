@@ -341,6 +341,12 @@
                   redrawCanvas();
                 }
               } else if (e.target.id === "scan") {
+                if (circle.wasScanned) {
+                  isContexting = false;
+                  // Hide the context menu
+                  contextMenu.style.display = "none";
+                  return;
+                }
                 const evtSource = new EventSource(
                   `http://localhost:3000/scan/${encodeURIComponent(
                     circle.link
